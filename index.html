@@ -163,10 +163,11 @@
 </div>
 
 <script>
-    const GEMINI_API_KEY = ''; // Dán API Key Google Gemini của bạn vào đây để phân tích ảnh thực tế
+    // Đã tích hợp khóa API trực tiếp
+    const GEMINI_API_KEY = 'AQ.Ab8RN6LYjxx4_t_qy0bTkhFYqvSF0AleXnH2SER_vtCaSa3zIQ'; 
     let globalKhoTemp = 0;
     let globalChungTuVol = 0;
-    let historyData = []; // Lưu danh sách lịch sử nhập trong ca
+    let historyData = [];
 
     setInterval(() => {
         const now = new Date();
@@ -184,7 +185,6 @@
         renderHistory();
     }
 
-    // Xử lý chọn ảnh từ camera
     document.getElementById('cameraInput').addEventListener('change', function(e) {
         if(e.target.files && e.target.files[0]) {
             hideAllSteps();
@@ -206,32 +206,18 @@
         document.getElementById('aiData').style.display = 'none';
 
         try {
-            let extractedData;
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === '') {
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                // Dữ liệu mẫu chuẩn ứng với phiếu gần nhất (6000L, hầm H034, nhiệt độ 31.31)
-                extractedData = {
-                    "So_Phieu": "0169557",
-                    "San_Pham": "Xăng E10 RON 95",
-                    "So_Luong": "6000",
-                    "Ngay_Lay_Hang": "12/08/2026",
-                    "Gio_Lay_Hang": "09:28",
-                    "Nhiet_Do": "31.31",
-                    "Ham_Chua_So": "H034",
-                    "Tam_Muc": "5"
-                };
-            } else {
-                const base64Data = base64Image.split(',')[1];
-                const prompt = "Hãy đọc phiếu xuất kho xăng dầu trong ảnh và trả về JSON chuẩn (không markdown) gồm các trường: So_Phieu, San_Pham, So_Luong (dạng số nguyên), Ngay_Lay_Hang, Gio_Lay_Hang, Nhiet_Do (tìm giá trị to), Ham_Chua_So (ví dụ H034), Tam_Muc (số đằng sau dấu hai chấm).";
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Data } }] }] })
-                });
-                const data = await response.json();
-                let jsonText = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-                extractedData = JSON.parse(jsonText);
-            }
+            const base64Data = base64Image.split(',')[1];
+            const prompt = "Hãy đọc phiếu xuất kho xăng dầu trong ảnh và trả về JSON chuẩn (không markdown) gồm các trường: So_Phieu, San_Pham, So_Luong (dạng số nguyên), Ngay_Lay_Hang, Gio_Lay_Hang, Nhiet_Do (tìm giá trị to), Ham_Chua_So (ví dụ H034), Tam_Muc (số đằng sau dấu hai chấm).";
+            
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Data } }] }] })
+            });
+            
+            const data = await response.json();
+            let jsonText = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const extractedData = JSON.parse(jsonText);
 
             document.getElementById('val-soPhieu').innerText = extractedData.So_Phieu;
             document.getElementById('val-sanPham').innerText = extractedData.San_Pham;
@@ -253,7 +239,7 @@
             document.getElementById('aiLoading').style.display = 'none';
             document.getElementById('aiData').style.display = 'block';
         } catch (error) {
-            alert("Lỗi đọc ảnh, vui lòng thử lại.");
+            alert("Lỗi đọc ảnh từ AI, vui lòng kiểm tra kết nối hoặc chụp rõ nét hơn.");
             goToStep1();
         }
     }
@@ -268,7 +254,6 @@
         document.getElementById('logicResultCard').style.display = 'none';
     }
 
-    // LOGIC ĐÁNH GIÁ THÔNG MINH (ĐỦ / THIẾU / NGHI NGỜ)
     function evaluateLogics() {
         const tempInput = parseFloat(document.getElementById('inputTemp').value);
         const levelInput = document.getElementById('inputLevel').value;
