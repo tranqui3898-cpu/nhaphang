@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quy Trình Nhập Xăng Dầu</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --primary: #0056b3;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --text-main: #333;
+            --text-muted: #6c757d;
+            --border: #dee2e6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; padding: 10px; display: flex; justify-content: center; }
+        
+        #app { width: 100%; max-width: 480px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; min-height: 95vh; }
+        
+        header { background: #1a1a2e; color: white; padding: 15px; text-align: center; }
+        header h2 { font-size: 1.2rem; margin-bottom: 5px; color: #4da8da; }
+        
+        .step-container { padding: 15px; display: none; flex: 1; }
+        .step-container.active { display: block; }
+        
+        .step-title { font-weight: bold; font-size: 1.1rem; color: #1a1a2e; margin-bottom: 15px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; }
+        
+        /* Buttons */
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; color: white; }
+        .btn-primary { background-color: var(--primary); }
+        .btn-success { background-color: var(--success); }
+        .btn-danger { background-color: var(--danger); }
+        .btn-outline { background-color: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn:active { opacity: 0.8; }
+
+        /* Step 1 */
+        .camera-box { border: 2px dashed var(--primary); background: #e9f2fb; border-radius: 8px; padding: 40px 20px; text-align: center; margin-bottom: 20px; cursor: pointer; }
+        
+        /* Step 2 & 3: Forms */
+        .info-card { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 15px; background: #f8f9fa; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+        .info-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .info-label { color: var(--text-muted); }
+        .info-val { font-weight: bold; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        .form-control { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+        
+        .ai-loading { text-align: center; padding: 30px; font-style: italic; color: var(--primary); }
+        .image-preview { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; display: none; }
+        
+        /* Alerts */
+        .alert { padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; font-weight: bold; display: none; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        
+        /* History Log */
+        .history-list { list-style: none; padding: 0; }
+        .history-item { background: #f8f9fa; border: 1px solid var(--border); padding: 10px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 0.85rem; }
+        
+        .badge-ok { background: var(--success); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <header>
+        <h2>QUY TRÌNH NHẬP XĂNG DẦU</h2>
+        <div style="font-size: 0.85rem;">Ca trực: <strong id="currentTime"></strong></div>
+    </header>
+
+    <!-- BƯỚC 1: CAMERA -->
+    <div id="step1" class="step-container active">
+        <div class="step-title">BƯỚC 1: TIẾP NHẬN CHỨNG TỪ</div>
+        
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+        
+        <div class="camera-box" onclick="document.getElementById('cameraInput').click()">
+            <div style="font-size: 3rem; margin-bottom: 10px;">📸</div>
+            <h3 style="color: var(--primary);">BẤM ĐỂ CHỤP PHIẾU XUẤT KHO</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); mt-2">Hệ thống sẽ tự động phân tích dữ liệu</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h4 style="margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">Lịch sử ca hiện tại</h4>
+            <ul class="history-list" id="historyList">
+                <li class="history-item">
+                    <span>Phiếu: 0167700 (DO)</span> <span><span class="badge-ok">OK</span></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- BƯỚC 2: AI PHÂN TÍCH -->
+    <div id="step2" class="step-container">
+        <div class="step-title">BƯỚC 2: AI PHÂN TÍCH SỐ LIỆU</div>
+        
+        <img id="imgPreview" class="image-preview" src="" alt="Phiếu đã chụp">
+        
+        <div id="aiLoading" class="ai-loading">
+            ⏳ Đang trích xuất dữ liệu từ hình ảnh...
+        </div>
+
+        <div id="aiData" style="display: none;">
+            <div class="info-card">
+                <div class="info-row"><span class="info-label">Số phiếu:</span> <span class="info-val">0167703</span></div>
+                <div class="info-row"><span class="info-label">Sản phẩm:</span> <span class="info-val">E10 RON 95</span></div>
+                <div class="info-row"><span class="info-label">Khối lượng:</span> <span class="info-val" style="color: var(--primary);">4000.00 Lít</span></div>
+                <div class="info-row"><span class="info-label">Giờ xuất kho:</span> <span class="info-val">09:28 (Hôm nay)</span></div>
+                <div class="info-row"><span class="info-label">Nhiệt độ kho (to):</span> <span class="info-val text-temp">30.56 °C</span></div>
+                <div class="info-row"><span class="info-label">Tấm mức kho:</span> <span class="info-val">H005: 5</span></div>
+            </div>
+            
+            <button class="btn btn-success" onclick="goToStep3()">✅ XÁC NHẬN SỐ LIỆU & ĐI TIẾP</button>
+            <button class="btn btn-outline" onclick="goToStep1()">Hủy bỏ & Chụp lại</button>
+        </div>
+    </div>
+
+    <!-- BƯỚC 3: XÁC NHẬN CHẤT LƯỢNG -->
+    <div id="step3" class="step-container">
+        <div class="step-title">BƯỚC 3: NHẬP SỐ LIỆU THỰC TẾ</div>
+        
+        <div class="info-card" style="background: #e9f2fb; border-color: var(--primary);">
+            <div class="info-row"><span class="info-label">Giờ xe đến (Hệ thống):</span> <span class="info-val" id="arrivalTime"></span></div>
+            <div class="info-row"><span class="info-label">Cữ chuẩn kho:</span> <span class="info-val">30.56°C | H005: 5</span></div>
+        </div>
+
+        <div class="alert alert-warning" id="tempAlert">
+            ⚠️ <strong>Dự đoán AI:</strong> <span id="tempAdvice">Vui lòng nhập nhiệt độ thực tế...</span>
+        </div>
+
+        <div class="form-group">
+            <label>🌡️ Nhiệt độ hầm đo được (°C):</label>
+            <input type="number" id="inputTemp" class="form-control" step="0.1" placeholder="Ví dụ: 32.5" oninput="analyzeTemperature()">
+        </div>
+
+        <div class="form-group">
+            <label>📏 Tình trạng chênh lệch Tấm mức:</label>
+            <select id="inputLevel" class="form-control">
+                <option value="">-- Chọn kết quả kiểm tra --</option>
+                <option value="Khớp cữ">✅ Khớp đúng cữ H005: 5</option>
+                <option value="Dâng cao">⬆️ Dâng cao hơn cữ</option>
+                <option value="Hụt thấp">⬇️ Hụt thấp hơn cữ</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>💧 Khối lượng thực nhập (Lít):</label>
+            <input type="number" id="inputVol" class="form-control" value="4000">
+        </div>
+
+        <button class="btn btn-primary" style="margin-top: 15px;" onclick="saveReport()">
+            💾 LƯU BÁO CÁO: ĐÚNG CHẤT LƯỢNG - ĐỦ SỐ LƯỢNG
+        </button>
+        <button class="btn btn-outline" onclick="goToStep1()">Hủy quy trình</button>
+    </div>
+</div>
+
+<script>
+    // Constants
+    const TEMP_KHO = 30.56;
+
+    // Clock
+    setInterval(() => {
+        const now = new Date();
+        document.getElementById('currentTime').innerText = now.toLocaleTimeString('vi-VN') + ' - ' + now.toLocaleDateString('vi-VN');
+    }, 1000);
+
+    // Navigation logic
+    function hideAllSteps() {
+        document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
+    }
+
+    function goToStep1() {
+        hideAllSteps();
+        document.getElementById('step1').classList.add('active');
+        document.getElementById('cameraInput').value = ''; 
+    }
+
+    // Step 1 -> Step 2 (Triggered by file upload)
+    document.getElementById('cameraInput').addEventListener('change', function(e) {
+        if(e.target.files && e.target.files[0]) {
+            hideAllSteps();
+            const step2 = document.getElementById('step2');
+            step2.classList.add('active');
+            
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imgPreview').src = e.target.result;
+                document.getElementById('imgPreview').style.display = 'block';
+            }
+            reader.readAsDataURL(e.target.files[0]);
+
+            // Simulate AI parsing delay
+            document.getElementById('aiLoading').style.display = 'block';
+            document.getElementById('aiData').style.display = 'none';
+            
+            setTimeout(() => {
+                document.getElementById('aiLoading').style.display = 'none';
+                document.getElementById('aiData').style.display = 'block';
+            }, 2000);
+        }
+    });
+
+    // Step 2 -> Step 3
+    function goToStep3() {
+        hideAllSteps();
+        document.getElementById('step3').classList.add('active');
+        
+        // Capture arrival time automatically
+        const now = new Date();
+        document.getElementById('arrivalTime').innerText = now.toLocaleTimeString('vi-VN');
+        
+        // Reset form
+        document.getElementById('inputTemp').value = '';
+        document.getElementById('inputLevel').value = '';
+        document.getElementById('tempAlert').style.display = 'none';
+    }
+
+    // Step 3 Logic: Analyze Temperature
+    function analyzeTemperature() {
+        const tempInput = parseFloat(document.getElementById('inputTemp').value);
+        const alertBox = document.getElementById('tempAlert');
+        const adviceText = document.getElementById('tempAdvice');
+
+        if (isNaN(tempInput)) {
+            alertBox.style.display = 'none';
+            return;
+        }
+
+        alertBox.style.display = 'block';
+        
+        if (tempInput > TEMP_KHO) {
+            alertBox.style.backgroundColor = '#fff3cd'; // Yellow
+            adviceText.innerHTML = "Nhiệt độ tăng. Xăng giãn nở, dự kiến tấm mức phải <strong>DÂNG CAO HƠN</strong> cữ.";
+        } else if (tempInput < TEMP_KHO) {
+            alertBox.style.backgroundColor = '#e2e3e5'; // Gray
+            adviceText.innerHTML = "Nhiệt độ giảm. Hao hụt vật lý, dự kiến tấm mức sẽ <strong>HỤT THẤP HƠN</strong> cữ.";
+        } else {
+            alertBox.style.backgroundColor = '#d4edda'; // Green
+            adviceText.innerHTML = "Nhiệt độ không đổi. Tấm mức phải <strong>KHỚP</strong> đúng cữ.";
+        }
+    }
+
+    // Save and Finish
+    function saveReport() {
+        const temp = document.getElementById('inputTemp').value;
+        const level = document.getElementById('inputLevel').value;
+        
+        if(!temp || !level) {
+            alert("Vui lòng nhập đầy đủ Nhiệt độ và Tình trạng tấm mức!");
+            return;
+        }
+
+        // Add to history
+        const nowStr = new Date().toLocaleTimeString('vi-VN');
+        const historyList = document.getElementById('historyList');
+        const newLi = document.createElement('li');
+        newLi.className = 'history-item';
+        newLi.innerHTML = `<span>Phiếu: 0167703 (E10) - ${nowStr}</span> <span><span class="badge-ok">OK</span></span>`;
+        historyList.insertBefore(newLi, historyList.firstChild);
+
+        alert("Báo cáo đã lưu thành công! Đảm bảo Đúng chất lượng - Đủ số lượng.");
+        goToStep1();
+    }
+</script>
+
+</body>
+</html>
