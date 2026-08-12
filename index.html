@@ -132,7 +132,7 @@
 
         <div class="form-group">
             <label>🌡️ Nhiệt độ hầm đo thực tế (°C):</label>
-            <input type="number" id="inputTemp" class="form-control" step="0.01" placeholder="Ví dụ: 31.5" oninput="evaluateLogics()">
+            <input type="number" id="inputTemp" class="form-control" step="0.01" placeholder="Ví dụ: 31.31" oninput="evaluateLogics()">
         </div>
 
         <div class="form-group">
@@ -163,10 +163,10 @@
 </div>
 
 <script>
-    const GEMINI_API_KEY = ''; // Dán API Key vào đây nếu muốn dùng AI thật
+    const GEMINI_API_KEY = ''; // Dán API Key Google Gemini của bạn vào đây để phân tích ảnh thực tế
     let globalKhoTemp = 0;
-    let globalChungTuVol = 4000;
-    let historyData = []; // Mảng lưu lịch sử nhập trong ca
+    let globalChungTuVol = 0;
+    let historyData = []; // Lưu danh sách lịch sử nhập trong ca
 
     setInterval(() => {
         const now = new Date();
@@ -184,7 +184,7 @@
         renderHistory();
     }
 
-    // Xử lý chọn ảnh
+    // Xử lý chọn ảnh từ camera
     document.getElementById('cameraInput').addEventListener('change', function(e) {
         if(e.target.files && e.target.files[0]) {
             hideAllSteps();
@@ -209,19 +209,20 @@
             let extractedData;
             if (!GEMINI_API_KEY || GEMINI_API_KEY === '') {
                 await new Promise(resolve => setTimeout(resolve, 1500));
+                // Dữ liệu mẫu chuẩn ứng với phiếu gần nhất (6000L, hầm H034, nhiệt độ 31.31)
                 extractedData = {
                     "So_Phieu": "0169557",
                     "San_Pham": "Xăng E10 RON 95",
                     "So_Luong": "6000",
                     "Ngay_Lay_Hang": "12/08/2026",
                     "Gio_Lay_Hang": "09:28",
-                    "Nhiet_Do": "30.56",
+                    "Nhiet_Do": "31.31",
                     "Ham_Chua_So": "H034",
                     "Tam_Muc": "5"
                 };
             } else {
                 const base64Data = base64Image.split(',')[1];
-                const prompt = "Đọc phiếu xuất kho xăng dầu trong ảnh và trả về JSON chuẩn gồm các trường: So_Phieu, San_Pham, So_Luong (dạng số nguyên hoặc thập phân không có dấu chấm phân cách hàng nghìn), Ngay_Lay_Hang, Gio_Lay_Hang, Nhiet_Do, Ham_Chua_So, Tam_Muc.";
+                const prompt = "Hãy đọc phiếu xuất kho xăng dầu trong ảnh và trả về JSON chuẩn (không markdown) gồm các trường: So_Phieu, San_Pham, So_Luong (dạng số nguyên), Ngay_Lay_Hang, Gio_Lay_Hang, Nhiet_Do (tìm giá trị to), Ham_Chua_So (ví dụ H034), Tam_Muc (số đằng sau dấu hai chấm).";
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -267,7 +268,7 @@
         document.getElementById('logicResultCard').style.display = 'none';
     }
 
-    // LOGIC ĐÁNH GIÁ THÔNG MINH (ĐỦ / THIẾU / NGHI HỜI)
+    // LOGIC ĐÁNH GIÁ THÔNG MINH (ĐỦ / THIẾU / NGHI NGỜ)
     function evaluateLogics() {
         const tempInput = parseFloat(document.getElementById('inputTemp').value);
         const levelInput = document.getElementById('inputLevel').value;
@@ -287,15 +288,12 @@
         logicCard.style.display = 'block';
 
         let warningMsg = "";
-        let statusType = "ĐỦ"; // Mặc định
+        let statusType = "ĐỦ"; 
 
-        // Kiểm tra nhiệt độ & tầm mức vật lý
         if (tempInput > globalKhoTemp) {
             alertBox.style.backgroundColor = '#fff3cd'; alertBox.style.color = '#856404';
-            warningMsg = `🌡️ Nhiệt độ tăng (${tempInput}°C > ${globalKhoTemp}°C): Xăng giãn nở, lý tưởng tầm mức phải <strong>DÂNG CAO HƠN</strong> cữ.`;
-            if (levelInput === 'Hụt thấp') {
-                statusType = "NGHI HỜI";
-            }
+            warningMsg = `🌡️ Nhiệt độ tăng (${tempInput}°C > ${globalKhoTemp}°C): Xăng giãn nở, lý tưởng tầm mức phải <strong>DÂNG CAO HƠN</strong> cữ chuẩn.`;
+            if (levelInput === 'Hụt thấp') statusType = "NGHI NGỜ";
         } else if (tempInput < globalKhoTemp) {
             alertBox.style.backgroundColor = '#e2e3e5'; alertBox.style.color = '#383d41';
             warningMsg = `🌡️ Nhiệt độ giảm (${tempInput}°C < ${globalKhoTemp}°C): Co ngót vật lý, tầm mức thực tế sẽ <strong>HỤT THẤP HƠN</strong> cữ (Hao hụt tự nhiên).`;
@@ -303,19 +301,17 @@
         } else {
             alertBox.style.backgroundColor = '#d4edda'; alertBox.style.color = '#155724';
             warningMsg = `🌡️ Nhiệt độ ổn định. Tấm mức phải <strong>KHỚP</strong> đúng cữ chuẩn.`;
-            if (levelInput !== 'Khớp cữ') statusType = "NGHI HỜI";
+            if (levelInput !== 'Khớp cữ') statusType = "NGHI NGỜ";
         }
 
-        // Kiểm tra lượng thực nhập so với chứng từ
         const diff = volInput - globalChungTuVol;
         if (diff < 0) {
-            if (statusType !== "NGHI HỜI") statusType = "THIẾU";
+            if (statusType !== "NGHI NGỜ") statusType = "THIẾU";
             warningMsg += `<br>💧 Lượng nhập hụt ${Math.abs(diff)} Lít so với chứng từ.`;
         }
 
         alertBox.innerHTML = warningMsg;
 
-        // Hiển thị kết luận thẻ cuối
         if (statusType === "ĐỦ") {
             logicCard.style.backgroundColor = '#d4edda'; logicCard.style.color = '#155724';
             logicText.innerHTML = "✅ KẾT LUẬN: NHẬP ĐỦ & AN TOÀN";
@@ -342,7 +338,6 @@
         const sanPham = document.getElementById('val-sanPham').innerText;
         const nowStr = new Date().toLocaleTimeString('vi-VN');
 
-        // Xác định nhãn trạng thái lưu lịch sử
         let badgeHTML = '<span class="badge badge-du">ĐỦ</span>';
         const diff = parseFloat(vol) - globalChungTuVol;
         if (diff < 0) badgeHTML = '<span class="badge badge-thieu">THIẾU</span>';
@@ -352,7 +347,6 @@
             badgeHTML = '<span class="badge badge-nghi-ngo">NGHI NGỜ</span>';
         }
 
-        // Đẩy vào mảng lịch sử
         historyData.unshift({
             phieu: soPhieu,
             sp: sanPham,
@@ -365,7 +359,6 @@
         goToStep1();
     }
 
-    // Hiển thị lịch sử ra màn hình Bước 1
     function renderHistory() {
         const listEl = document.getElementById('historyList');
         const countEl = document.getElementById('historyCount');
