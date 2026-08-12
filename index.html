@@ -21,7 +21,7 @@
         
         body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; padding: 10px; display: flex; justify-content: center; }
         
-        #app { width: 100%; max-width: 480px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; min-height: 95vh; position: relative;}
+        #app { width: 100%; max-width: 480px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; min-height: 95vh; }
         
         header { background: #1a1a2e; color: white; padding: 15px; text-align: center; }
         header h2 { font-size: 1.2rem; margin-bottom: 5px; color: #4da8da; }
@@ -47,7 +47,7 @@
         .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid #eee; padding-bottom: 4px; }
         .info-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .info-label { color: var(--text-muted); }
-        .info-val { font-weight: bold; text-align: right; }
+        .info-val { font-weight: bold; }
         
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
@@ -62,16 +62,9 @@
         
         /* History Log */
         .history-list { list-style: none; padding: 0; }
-        .history-item { background: #f8f9fa; border: 1px solid var(--border); padding: 12px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 0.9rem; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .history-item:active { background: #e9ecef; }
+        .history-item { background: #f8f9fa; border: 1px solid var(--border); padding: 10px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 0.85rem; }
+        
         .badge-ok { background: var(--success); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
-
-        /* Modal hiển thị chi tiết phiếu */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
-        .modal-content { background-color: var(--card-bg); margin: 10% auto; padding: 20px; border-radius: 12px; width: 90%; max-width: 420px; max-height: 85vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .close-btn { color: var(--text-muted); float: right; font-size: 28px; font-weight: bold; cursor: pointer; margin-top: -5px; }
-        .close-btn:hover, .close-btn:active { color: var(--danger); }
-        .modal-image { width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; background: #f8f9fa; display: none;}
     </style>
 </head>
 <body>
@@ -91,13 +84,15 @@
         <div class="camera-box" onclick="document.getElementById('cameraInput').click()">
             <div style="font-size: 3rem; margin-bottom: 10px;">📸</div>
             <h3 style="color: var(--primary);">BẤM ĐỂ CHỤP PHIẾU XUẤT KHO</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Hệ thống sẽ tự động phân tích dữ liệu</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); mt-2">Hệ thống sẽ tự động phân tích dữ liệu</p>
         </div>
 
         <div style="margin-top: 30px;">
-            <h4 style="margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">Lịch sử ca hiện tại (Bấm để xem)</h4>
+            <h4 style="margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">Lịch sử ca hiện tại</h4>
             <ul class="history-list" id="historyList">
-                <!-- Danh sách phiếu sẽ được thêm vào đây bằng JavaScript -->
+                <li class="history-item">
+                    <span>Phiếu: 0167700 (DO)</span> <span><span class="badge-ok">OK</span></span>
+                </li>
             </ul>
         </div>
     </div>
@@ -114,11 +109,14 @@
 
         <div id="aiData" style="display: none;">
             <div class="info-card">
-                <div class="info-row"><span class="info-label">Số phiếu:</span> <span class="info-val" id="aiReceiptCode">0167703</span></div>
-                <div class="info-row"><span class="info-label">Sản phẩm:</span> <span class="info-val">E10 RON 95</span></div>
-                <div class="info-row"><span class="info-label">Khối lượng:</span> <span class="info-val" style="color: var(--primary);">4000.00 Lít</span></div>
-                <div class="info-row"><span class="info-label">Nhiệt độ kho (to):</span> <span class="info-val">30.56 °C</span></div>
-                <div class="info-row"><span class="info-label">Tấm mức kho:</span> <span class="info-val">H005: 5</span></div>
+                <div class="info-row"><span class="info-label">Số phiếu:</span> <span class="info-val">0167703</span></div>
+                <div class="info-row"><span class="info-label">Sản phẩm:</span> <span class="info-val">Xăng E10 RON 95</span></div>
+                <div class="info-row"><span class="info-label">Khối lượng:</span> <span class="info-val" style="color: var(--primary);">4.000 Lít</span></div>
+                <div class="info-row"><span class="info-label">Ngày lấy hàng:</span> <span class="info-val">12/08/2026</span></div>
+                <div class="info-row"><span class="info-label">Giờ lấy hàng:</span> <span class="info-val">09:28</span></div>
+                <div class="info-row"><span class="info-label">Nhiệt độ (to):</span> <span class="info-val text-temp">30.56 °C</span></div>
+                <div class="info-row"><span class="info-label">Hầm chứa số:</span> <span class="info-val">H005</span></div>
+                <div class="info-row"><span class="info-label">Tầm mức:</span> <span class="info-val">5</span></div>
             </div>
             
             <button class="btn btn-success" onclick="goToStep3()">✅ XÁC NHẬN SỐ LIỆU & ĐI TIẾP</button>
@@ -131,8 +129,8 @@
         <div class="step-title">BƯỚC 3: NHẬP SỐ LIỆU THỰC TẾ</div>
         
         <div class="info-card" style="background: #e9f2fb; border-color: var(--primary);">
-            <div class="info-row"><span class="info-label">Giờ xe đến:</span> <span class="info-val" id="arrivalTime"></span></div>
-            <div class="info-row"><span class="info-label">Cữ chuẩn kho:</span> <span class="info-val">30.56°C | H005: 5</span></div>
+            <div class="info-row"><span class="info-label">Giờ xe đến (Hệ thống):</span> <span class="info-val" id="arrivalTime"></span></div>
+            <div class="info-row"><span class="info-label">Cữ chuẩn kho:</span> <span class="info-val">30.56°C | Hầm H005 - Mức: 5</span></div>
         </div>
 
         <div class="alert alert-warning" id="tempAlert">
@@ -145,12 +143,12 @@
         </div>
 
         <div class="form-group">
-            <label>📏 Tình trạng chênh lệch Tấm mức:</label>
+            <label>📏 Tình trạng chênh lệch Tầm mức:</label>
             <select id="inputLevel" class="form-control">
                 <option value="">-- Chọn kết quả kiểm tra --</option>
-                <option value="Khớp cữ H005: 5">✅ Khớp đúng cữ H005: 5</option>
-                <option value="Dâng cao hơn cữ">⬆️ Dâng cao hơn cữ</option>
-                <option value="Hụt thấp hơn cữ">⬇️ Hụt thấp hơn cữ</option>
+                <option value="Khớp cữ">✅ Khớp đúng tầm mức 5</option>
+                <option value="Dâng cao">⬆️ Dâng cao hơn cữ</option>
+                <option value="Hụt thấp">⬇️ Hụt thấp hơn cữ</option>
             </select>
         </div>
 
@@ -166,58 +164,17 @@
     </div>
 </div>
 
-<!-- Modal hiển thị chi tiết lịch sử -->
-<div id="historyModal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
-        <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; color: var(--primary);">Chi Tiết Phiếu Nhập</h3>
-        
-        <img id="modalImage" class="modal-image" src="" alt="Ảnh phiếu nhập">
-        
-        <div class="info-card">
-            <div class="info-row"><span class="info-label">Số phiếu:</span> <span class="info-val" id="modalReceipt"></span></div>
-            <div class="info-row"><span class="info-label">Sản phẩm:</span> <span class="info-val" id="modalProduct"></span></div>
-            <div class="info-row"><span class="info-label">Giờ chốt ca:</span> <span class="info-val" id="modalTime"></span></div>
-            <div class="info-row"><span class="info-label">Nhiệt độ đo:</span> <span class="info-val" id="modalTemp"></span></div>
-            <div class="info-row"><span class="info-label">Tấm mức:</span> <span class="info-val" id="modalLevel"></span></div>
-            <div class="info-row"><span class="info-label">Lượng thực nhập:</span> <span class="info-val" style="color: var(--primary);" id="modalVol"></span></div>
-        </div>
-        
-        <button class="btn btn-outline" onclick="closeModal()">Đóng</button>
-    </div>
-</div>
-
 <script>
-    // Constants & Global Variables
+    // Constants
     const TEMP_KHO = 30.56;
-    let currentImageDataUrl = "";
-    
-    // Mảng lưu trữ lịch sử nhập hàng trong ca
-    let importHistory = [
-        // Dữ liệu mẫu ban đầu để giao diện không bị trống
-        {
-            time: "08:15",
-            receipt: "0167700",
-            product: "DO 0.05S-II",
-            temp: "31.2",
-            level: "Khớp cữ H005: 5",
-            vol: "6000",
-            image: "" // Không có ảnh cho dữ liệu mẫu
-        }
-    ];
 
-    // Cập nhật đồng hồ hệ thống
+    // Clock
     setInterval(() => {
         const now = new Date();
         document.getElementById('currentTime').innerText = now.toLocaleTimeString('vi-VN') + ' - ' + now.toLocaleDateString('vi-VN');
     }, 1000);
 
-    // Khởi tạo giao diện lịch sử ban đầu
-    window.onload = function() {
-        renderHistory();
-    };
-
-    // Hàm chuyển đổi màn hình
+    // Navigation logic
     function hideAllSteps() {
         document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
     }
@@ -226,56 +183,50 @@
         hideAllSteps();
         document.getElementById('step1').classList.add('active');
         document.getElementById('cameraInput').value = ''; 
-        currentImageDataUrl = ""; // Reset ảnh
     }
 
-    // Xử lý khi chọn ảnh từ Camera (Bước 1 -> Bước 2)
+    // Step 1 -> Step 2 (Triggered by file upload)
     document.getElementById('cameraInput').addEventListener('change', function(e) {
         if(e.target.files && e.target.files[0]) {
             hideAllSteps();
             const step2 = document.getElementById('step2');
             step2.classList.add('active');
             
-            // Đọc ảnh và lưu vào biến toàn cục để dành cho Bước 3
+            // Show preview
             const reader = new FileReader();
-            reader.onload = function(event) {
-                currentImageDataUrl = event.target.result;
-                document.getElementById('imgPreview').src = currentImageDataUrl;
+            reader.onload = function(e) {
+                document.getElementById('imgPreview').src = e.target.result;
                 document.getElementById('imgPreview').style.display = 'block';
             }
             reader.readAsDataURL(e.target.files[0]);
 
-            // Giả lập thời gian AI phân tích
+            // Simulate AI parsing delay
             document.getElementById('aiLoading').style.display = 'block';
             document.getElementById('aiData').style.display = 'none';
             
             setTimeout(() => {
-                // Giả lập tạo mã phiếu ngẫu nhiên để phân biệt
-                const randomCode = "016" + Math.floor(1000 + Math.random() * 9000);
-                document.getElementById('aiReceiptCode').innerText = randomCode;
-                
                 document.getElementById('aiLoading').style.display = 'none';
                 document.getElementById('aiData').style.display = 'block';
             }, 2000);
         }
     });
 
-    // Chuyển sang Bước 3
+    // Step 2 -> Step 3
     function goToStep3() {
         hideAllSteps();
         document.getElementById('step3').classList.add('active');
         
-        // Tự động chốt giờ xe đến
+        // Capture arrival time automatically
         const now = new Date();
         document.getElementById('arrivalTime').innerText = now.toLocaleTimeString('vi-VN');
         
-        // Xóa trắng form nhập liệu
+        // Reset form
         document.getElementById('inputTemp').value = '';
         document.getElementById('inputLevel').value = '';
         document.getElementById('tempAlert').style.display = 'none';
     }
 
-    // Logic AI: Phân tích cảnh báo nhiệt độ
+    // Step 3 Logic: Analyze Temperature
     function analyzeTemperature() {
         const tempInput = parseFloat(document.getElementById('inputTemp').value);
         const alertBox = document.getElementById('tempAlert');
@@ -289,103 +240,37 @@
         alertBox.style.display = 'block';
         
         if (tempInput > TEMP_KHO) {
-            alertBox.style.backgroundColor = '#fff3cd';
-            adviceText.innerHTML = "Nhiệt độ tăng. Xăng giãn nở, dự kiến tấm mức phải <strong>DÂNG CAO HƠN</strong> cữ.";
+            alertBox.style.backgroundColor = '#fff3cd'; // Yellow
+            adviceText.innerHTML = "Nhiệt độ tăng. Xăng giãn nở, dự kiến tầm mức phải <strong>DÂNG CAO HƠN</strong> cữ 5.";
         } else if (tempInput < TEMP_KHO) {
-            alertBox.style.backgroundColor = '#e2e3e5'; 
-            adviceText.innerHTML = "Nhiệt độ giảm. Hao hụt vật lý, dự kiến tấm mức sẽ <strong>HỤT THẤP HƠN</strong> cữ.";
+            alertBox.style.backgroundColor = '#e2e3e5'; // Gray
+            adviceText.innerHTML = "Nhiệt độ giảm. Hao hụt vật lý, dự kiến tầm mức sẽ <strong>HỤT THẤP HƠN</strong> cữ 5.";
         } else {
-            alertBox.style.backgroundColor = '#d4edda';
-            adviceText.innerHTML = "Nhiệt độ không đổi. Tấm mức phải <strong>KHỚP</strong> đúng cữ.";
+            alertBox.style.backgroundColor = '#d4edda'; // Green
+            adviceText.innerHTML = "Nhiệt độ không đổi. Tầm mức phải <strong>KHỚP</strong> đúng cữ 5.";
         }
     }
 
-    // Lưu Báo Cáo và kết thúc quy trình
+    // Save and Finish
     function saveReport() {
         const temp = document.getElementById('inputTemp').value;
         const level = document.getElementById('inputLevel').value;
-        const vol = document.getElementById('inputVol').value;
-        const receiptCode = document.getElementById('aiReceiptCode').innerText;
         
         if(!temp || !level) {
-            alert("Vui lòng nhập đầy đủ Nhiệt độ và Tình trạng tấm mức để lưu hồ sơ!");
+            alert("Vui lòng nhập đầy đủ Nhiệt độ và Tình trạng tầm mức!");
             return;
         }
 
-        // Đẩy dữ liệu mới vào đầu mảng lịch sử
+        // Add to history
         const nowStr = new Date().toLocaleTimeString('vi-VN');
-        importHistory.unshift({
-            time: nowStr,
-            receipt: receiptCode,
-            product: "E10 RON 95",
-            temp: temp,
-            level: level,
-            vol: vol,
-            image: currentImageDataUrl
-        });
+        const historyList = document.getElementById('historyList');
+        const newLi = document.createElement('li');
+        newLi.className = 'history-item';
+        newLi.innerHTML = `<span>Phiếu: 0167703 (E10) - ${nowStr}</span> <span><span class="badge-ok">OK</span></span>`;
+        historyList.insertBefore(newLi, historyList.firstChild);
 
-        alert("Hệ thống đã ghi nhận thành công! Đảm bảo thông điệp: Đúng chất lượng - Đủ số lượng.");
-        
-        // Cập nhật lại danh sách hiển thị và quay về trang chủ
-        renderHistory();
+        alert("Báo cáo đã lưu thành công! Đảm bảo Đúng chất lượng - Đủ số lượng.");
         goToStep1();
-    }
-
-    // Vẽ lại danh sách lịch sử ra màn hình
-    function renderHistory() {
-        const list = document.getElementById('historyList');
-        list.innerHTML = ""; // Xóa dữ liệu cũ
-        
-        importHistory.forEach((item, index) => {
-            const li = document.createElement('li');
-            li.className = 'history-item';
-            // Cài đặt sự kiện bấm vào dòng nào thì truyền số thứ tự (index) của dòng đó vào hàm mở Modal
-            li.onclick = function() { showHistoryDetail(index); };
-            
-            li.innerHTML = `
-                <span><strong>Phiếu: ${item.receipt}</strong> (${item.product}) - ${item.time}</span> 
-                <span><span class="badge-ok">OK</span></span>
-            `;
-            list.appendChild(li);
-        });
-    }
-
-    // Mở Modal và đổ dữ liệu tương ứng của phiếu được chọn
-    function showHistoryDetail(index) {
-        const item = importHistory[index];
-        
-        document.getElementById('modalReceipt').innerText = item.receipt;
-        document.getElementById('modalProduct').innerText = item.product;
-        document.getElementById('modalTime').innerText = item.time;
-        document.getElementById('modalTemp').innerText = item.temp + " °C";
-        document.getElementById('modalLevel').innerText = item.level;
-        document.getElementById('modalVol').innerText = parseFloat(item.vol).toLocaleString('vi-VN') + " Lít";
-        
-        // Xử lý ảnh: Nếu có ảnh chụp thì hiện, không có thì ẩn
-        const imgElement = document.getElementById('modalImage');
-        if(item.image) {
-            imgElement.src = item.image;
-            imgElement.style.display = "block";
-        } else {
-            imgElement.src = "";
-            imgElement.style.display = "none";
-        }
-
-        // Hiển thị modal
-        document.getElementById('historyModal').style.display = "block";
-    }
-
-    // Đóng Modal
-    function closeModal() {
-        document.getElementById('historyModal').style.display = "none";
-    }
-
-    // Bấm ra ngoài vùng Modal để đóng
-    window.onclick = function(event) {
-        const modal = document.getElementById('historyModal');
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
     }
 </script>
 
