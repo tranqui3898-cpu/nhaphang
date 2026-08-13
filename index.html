@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quy Trình Nhập Xăng Dầu Thông Minh</title>
+    <title>Quy Trình Nhập Xăng Dầu 5 Bước</title>
     <style>
         :root {
             --bg-color: #f4f6f9;
@@ -20,188 +20,206 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; padding: 10px; display: flex; justify-content: center; }
         
-        #app { width: 100%; max-width: 480px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; min-height: 95vh; }
+        #app { width: 100%; max-width: 500px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; min-height: 95vh; }
         
         header { background: #1a1a2e; color: white; padding: 15px; text-align: center; }
         header h2 { font-size: 1.2rem; margin-bottom: 5px; color: #4da8da; }
         
         .step-container { padding: 15px; display: none; flex: 1; }
         .step-container.active { display: block; }
-        .step-title { font-weight: bold; font-size: 1.1rem; color: #1a1a2e; margin-bottom: 15px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; }
+        .step-title { font-weight: bold; font-size: 1.1rem; color: #1a1a2e; margin-bottom: 15px; border-bottom: 2px solid var(--primary); padding-bottom: 5px; text-transform: uppercase; }
         
         .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; color: white; }
         .btn-primary { background-color: var(--primary); }
         .btn-success { background-color: var(--success); }
-        .btn-danger { background-color: var(--danger); }
+        .btn-warning { background-color: var(--warning); color: #333; }
         .btn-outline { background-color: transparent; border: 1px solid var(--border); color: var(--text-main); }
         .btn:active { opacity: 0.8; }
 
-        .camera-box { border: 2px dashed var(--primary); background: #e9f2fb; border-radius: 8px; padding: 30px 20px; text-align: center; margin-bottom: 15px; cursor: pointer; }
+        .camera-box { border: 2px dashed var(--primary); background: #e9f2fb; border-radius: 8px; padding: 25px 20px; text-align: center; margin-bottom: 15px; cursor: pointer; }
         
-        .info-card { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 15px; background: #f8f9fa; }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid #eee; padding-bottom: 4px; }
-        .info-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .info-label { color: var(--text-muted); }
-        .info-val { font-weight: bold; }
-        
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 12px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
-        .form-control { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
         
-        .ai-loading { text-align: center; padding: 30px; font-style: italic; color: var(--primary); }
-        .image-preview { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; display: none; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; text-align: center; }
+        .grid-5 input { padding: 8px 5px; text-align: center; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; width: 100%; }
+        .grid-5 label { font-size: 0.8rem; margin-bottom: 2px; color: var(--text-muted); }
+
+        .image-preview { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; display: none; background: #eee; }
         
-        .alert { padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 0.85rem; font-weight: bold; display: none; line-height: 1.4; }
+        .alert { padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; font-weight: bold; display: none; line-height: 1.4; }
         
-        .history-list { list-style: none; padding: 0; max-height: 220px; overflow-y: auto; }
-        .history-item { background: #f8f9fa; border: 1px solid var(--border); padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 0.85rem; }
-        .history-top { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 4px; }
-        .history-sub { color: var(--text-muted); font-size: 0.8rem; }
-        
-        .badge { padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; color: white; font-weight: bold; }
-        .badge-du { background: var(--success); }
-        .badge-thieu { background: #17a2b8; }
-        .badge-nghi-ngo { background: var(--danger); }
-        
-        .settings-box { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; }
+        /* Bảng hiển thị tóm tắt */
+        .summary-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 0.9rem; }
+        .summary-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding: 6px 0; }
+        .summary-row:last-child { border-bottom: none; }
+        .highlight { color: var(--primary); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="app">
     <header>
-        <h2>QUY TRÌNH NHẬP XĂNG DẦU</h2>
+        <h2>QUY TRÌNH NHẬP HÀNG 5 BƯỚC</h2>
         <div style="font-size: 0.85rem;">Ca trực: <strong id="currentTime"></strong></div>
     </header>
 
-    <!-- BƯỚC 1: CAMERA & CÀI ĐẶT API KEY -->
+    <!-- BƯỚC 1: CAMERA -->
     <div id="step1" class="step-container active">
-        <div class="step-title">BƯỚC 1: TIẾP NHẬN CHỨNG TỪ</div>
-        
-        <!-- Khung cấu hình API Key trực tiếp trên giao diện để tránh bị GitHub chặn -->
-        <div class="settings-box">
-            <label style="font-weight: bold; display: block; margin-bottom: 3px;">🔑 Nhập Gemini API Key của bạn:</label>
-            <div style="display: flex; gap: 5px;">
-                <input type="password" id="apiKeyInput" class="form-control" placeholder="Dán API Key vào đây..." style="padding: 8px; font-size: 0.9rem;">
-                <button onclick="saveApiKey()" class="btn btn-primary" style="width: 80px; padding: 8px; margin: 0; font-size: 0.85rem;">Lưu</button>
-            </div>
-            <div id="apiStatus" style="font-size: 0.75rem; margin-top: 4px; color: #856404;">Chưa lưu khóa (Sẽ dùng dữ liệu mẫu thông minh nếu để trống).</div>
-        </div>
-
+        <div class="step-title">Bước 1: Chụp chứng từ</div>
         <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
         
         <div class="camera-box" onclick="document.getElementById('cameraInput').click()">
             <div style="font-size: 2.5rem; margin-bottom: 5px;">📸</div>
             <h3 style="color: var(--primary); font-size: 1.1rem;">CHỤP PHIẾU XUẤT KHO</h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Hệ thống AI sẽ tự động phân tích</p>
-        </div>
-
-        <div>
-            <h4 style="margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; display: flex; justify-content: space-between; font-size: 0.9rem;">
-                <span>Lịch sử nhập trong ca</span>
-                <span id="historyCount" style="font-size: 0.8rem; color: var(--text-muted);">(0 phiếu)</span>
-            </h4>
-            <ul class="history-list" id="historyList">
-                <li style="text-align: center; color: var(--text-muted); padding: 10px; font-size: 0.8rem;">Chưa có phiếu nhập nào trong ca này.</li>
-            </ul>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Lưu lại chứng từ để đối chiếu</p>
         </div>
     </div>
 
-    <!-- BƯỚC 2: AI PHÂN TÍCH -->
+    <!-- BƯỚC 2: NHẬP SỐ LIỆU CHỨNG TỪ -->
     <div id="step2" class="step-container">
-        <div class="step-title">BƯỚC 2: AI PHÂN TÍCH SỐ LIỆU</div>
+        <div class="step-title">Bước 2: Ghi nhận chứng từ</div>
         <img id="imgPreview" class="image-preview" src="" alt="Phiếu đã chụp">
         
-        <div id="aiLoading" class="ai-loading">
-            ⏳ Đang kết nối AI để đọc dữ liệu phiếu...
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Số phiếu:</label>
+                <input type="text" id="s2_soPhieu" class="form-control" placeholder="VD: a,b,c...">
+            </div>
+            <div class="form-group">
+                <label>Xăng/Dầu:</label>
+                <input type="text" id="s2_loaiHang" class="form-control" placeholder="VD: Xăng E10">
+            </div>
+        </div>
+        
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Số lượng (Lít):</label>
+                <input type="number" id="s2_soLuong" class="form-control" placeholder="VD: 20000">
+            </div>
+            <div class="form-group">
+                <label>Nhiệt độ kho (to):</label>
+                <input type="number" id="s2_nhietDo" class="form-control" step="0.1" placeholder="VD: 30.5">
+            </div>
         </div>
 
-        <div id="aiData" style="display: none;">
-            <div class="info-card">
-                <div class="info-row"><span class="info-label">Số phiếu:</span> <span class="info-val" id="val-soPhieu">...</span></div>
-                <div class="info-row"><span class="info-label">Sản phẩm:</span> <span class="info-val" id="val-sanPham">...</span></div>
-                <div class="info-row"><span class="info-label">Khối lượng:</span> <span class="info-val" style="color: var(--primary);"><span id="val-soLuong">...</span> Lít</span></div>
-                <div class="info-row"><span class="info-label">Ngày/Giờ xuất:</span> <span class="info-val"><span id="val-ngayLay">...</span> <span id="val-gioLay">...</span></span></div>
-                <div class="info-row"><span class="info-label">Nhiệt độ (to):</span> <span class="info-val"><span id="val-nhietDo">...</span> °C</span></div>
-                <div class="info-row"><span class="info-label">Hầm chứa số:</span> <span class="info-val" id="val-hamChua">...</span></div>
-                <div class="info-row"><span class="info-label">Tầm mức:</span> <span class="info-val" id="val-tamMuc">...</span></div>
+        <div class="form-group">
+            <label>Tầm mức kho (H1 - H5):</label>
+            <div class="grid-5">
+                <div><label>H1</label><input type="number" id="s2_h1" placeholder="+5"></div>
+                <div><label>H2</label><input type="number" id="s2_h2" placeholder="0"></div>
+                <div><label>H3</label><input type="number" id="s2_h3" placeholder="0"></div>
+                <div><label>H4</label><input type="number" id="s2_h4" placeholder="+5"></div>
+                <div><label>H5</label><input type="number" id="s2_h5" placeholder="0"></div>
+            </div>
+        </div>
+        
+        <button class="btn btn-primary" onclick="goToStep3()">TIẾP TỤC BƯỚC 3 ➡️</button>
+        <button class="btn btn-outline" onclick="goToStep1()">Chụp lại ảnh</button>
+    </div>
+
+    <!-- BƯỚC 3: NHẬP SỐ LIỆU THỰC TẾ TRÊN XE -->
+    <div id="step3" class="step-container">
+        <div class="step-title">Bước 3: Thực tế tại trạm (Xe bồn)</div>
+        
+        <div class="summary-box" style="background: #fff3cd; border-color: #ffeeba;">
+            <div class="summary-row"><span>Nhiệt độ kho xuất:</span> <span class="highlight" id="lbl_khoTemp"></span></div>
+        </div>
+
+        <div class="form-group">
+            <label>🌡️ Nhiệt độ nhập thực tế (°C):</label>
+            <input type="number" id="s3_nhietDo" class="form-control" step="0.1" placeholder="VD: 30.5">
+        </div>
+
+        <div class="form-group">
+            <label>📏 Tầm mức nhập thực tế (H1 - H5):</label>
+            <div class="grid-5">
+                <div><label>H1</label><input type="number" id="s3_h1"></div>
+                <div><label>H2</label><input type="number" id="s3_h2"></div>
+                <div><label>H3</label><input type="number" id="s3_h3"></div>
+                <div><label>H4</label><input type="number" id="s3_h4"></div>
+                <div><label>H5</label><input type="number" id="s3_h5"></div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="goToStep4()">TIẾP TỤC BƯỚC 4 ➡️</button>
+        <button class="btn btn-outline" onclick="goToStep(2)">Quay lại</button>
+    </div>
+
+    <!-- BƯỚC 4: SỐ ĐO BỒN TRƯỚC NHẬP -->
+    <div id="step4" class="step-container">
+        <div class="step-title">Bước 4: Số đo bồn (TRƯỚC khi nhập)</div>
+        
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Bồn 1:</label>
+                <input type="number" id="s4_bon1" class="form-control" value="0">
+            </div>
+            <div class="form-group">
+                <label>Bồn 2:</label>
+                <input type="number" id="s4_bon2" class="form-control" value="0">
+            </div>
+            <div class="form-group">
+                <label>Bồn 3:</label>
+                <input type="number" id="s4_bon3" class="form-control" value="0">
+            </div>
+            <div class="form-group">
+                <label>Bồn Dầu:</label>
+                <input type="number" id="s4_bonDau" class="form-control" value="0">
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="goToStep5()">TIẾP TỤC BƯỚC 5 ➡️</button>
+        <button class="btn btn-outline" onclick="goToStep(3)">Quay lại</button>
+    </div>
+
+    <!-- BƯỚC 5: SỐ ĐO BỒN SAU NHẬP & KẾT QUẢ -->
+    <div id="step5" class="step-container">
+        <div class="step-title">Bước 5: Số đo bồn (SAU khi nhập)</div>
+        
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Bồn 1:</label>
+                <input type="number" id="s5_bon1" class="form-control" value="0" oninput="calculateFinalResult()">
+            </div>
+            <div class="form-group">
+                <label>Bồn 2:</label>
+                <input type="number" id="s5_bon2" class="form-control" value="0" oninput="calculateFinalResult()">
+            </div>
+            <div class="form-group">
+                <label>Bồn 3:</label>
+                <input type="number" id="s5_bon3" class="form-control" value="0" oninput="calculateFinalResult()">
+            </div>
+            <div class="form-group">
+                <label>Bồn Dầu:</label>
+                <input type="number" id="s5_bonDau" class="form-control" value="0" oninput="calculateFinalResult()">
+            </div>
+        </div>
+
+        <div id="finalResultCard" style="display: none;">
+            <div class="summary-box">
+                <div class="summary-row"><span>Chứng từ (Lít):</span> <span class="highlight" id="res_chungTu"></span></div>
+                <div class="summary-row"><span>Thực nhập bồn (Lít):</span> <span class="highlight" id="res_thucNhap"></span></div>
+                <div class="summary-row"><span>Chênh lệch:</span> <span class="highlight" id="res_chenhLech"></span></div>
             </div>
             
-            <button class="btn btn-success" onclick="goToStep3()">✅ XÁC NHẬN SỐ LIỆU & ĐI TIẾP</button>
-            <button class="btn btn-outline" onclick="goToStep1()">Hủy bỏ & Chụp lại</button>
+            <div class="alert" id="logicAlert"></div>
+            
+            <button class="btn btn-success" style="margin-top: 10px;" onclick="saveAndReset()">
+                💾 LƯU BÁO CÁO: ĐÚNG CHẤT LƯỢNG - ĐỦ SỐ LƯỢNG
+            </button>
         </div>
+
+        <button class="btn btn-outline" style="margin-top: 15px;" onclick="goToStep(4)">Quay lại</button>
     </div>
 
-    <!-- BƯỚC 3: XÁC NHẬN CHẤT LƯỢNG & LOGIC ĐÁNH GIÁ -->
-    <div id="step3" class="step-container">
-        <div class="step-title">BƯỚC 3: ĐÁNH GIÁ & CHỐT CA</div>
-        
-        <div class="info-card" style="background: #e9f2fb; border-color: var(--primary);">
-            <div class="info-row"><span class="info-label">Giờ xe đến:</span> <span class="info-val" id="arrivalTime"></span></div>
-            <div class="info-row"><span class="info-label">Chuẩn kho:</span> <span class="info-val"><span id="step3-nhietDo"></span>°C | Hầm <span id="step3-ham"></span> - Mức: <span id="step3-tamMuc"></span></span></div>
-        </div>
-
-        <div class="alert" id="tempAlert"></div>
-
-        <div class="form-group">
-            <label>🌡️ Nhiệt độ hầm đo thực tế (°C):</label>
-            <input type="number" id="inputTemp" class="form-control" step="0.01" placeholder="Ví dụ: 31.31" oninput="evaluateLogics()">
-        </div>
-
-        <div class="form-group">
-            <label>📏 Tình trạng thực tế Tầm mức tại hầm:</label>
-            <select id="inputLevel" class="form-control" onchange="evaluateLogics()">
-                <option value="">-- Chọn trạng thái thực tế --</option>
-                <option value="Khớp cữ">✅ Khớp đúng cữ chuẩn</option>
-                <option value="Dâng cao">⬆️ Dâng cao hơn cữ</option>
-                <option value="Hụt thấp">⬇️ Hụt thấp hơn cữ</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>💧 Khối lượng thực nhập vào bồn (Lít):</label>
-            <input type="number" id="inputVol" class="form-control" placeholder="Nhập số lượng thực tế..." oninput="evaluateLogics()">
-        </div>
-
-        <div id="logicResultCard" style="display: none; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center; font-weight: bold; font-size: 0.9rem;">
-            Đánh giá: <span id="logicStatusText">---</span>
-        </div>
-
-        <button class="btn btn-primary" style="margin-top: 5px;" onclick="saveReport()">
-            💾 LƯU BÁO CÁO: ĐÚNG CHẤT LƯỢNG - ĐỦ SỐ LƯỢNG
-        </button>
-        <button class="btn btn-outline" onclick="goToStep1()">Hủy quy trình</button>
-    </div>
 </div>
 
 <script>
-    let globalKhoTemp = 0;
-    let globalChungTuVol = 0;
-    let historyData = [];
-
-    // Tự động tải API Key đã lưu trong bộ nhớ điện thoại (localStorage) khi mở app
-    window.onload = function() {
-        const savedKey = localStorage.getItem('gemini_api_key');
-        if (savedKey) {
-            document.getElementById('apiKeyInput').value = savedKey;
-            document.getElementById('apiStatus').innerText = "✅ Đã lưu khóa API trên thiết bị của bạn.";
-            document.getElementById('apiStatus').style.color = "#28a745";
-        }
-    }
-
-    function saveApiKey() {
-        const key = document.getElementById('apiKeyInput').value.trim();
-        if (key) {
-            localStorage.setItem('gemini_api_key', key);
-            document.getElementById('apiStatus').innerText = "✅ Đã lưu khóa API thành công!";
-            document.getElementById('apiStatus').style.color = "#28a745";
-            alert("Đã lưu API Key thành công trên trình duyệt của bạn!");
-        } else {
-            localStorage.removeItem('gemini_api_key');
-            document.getElementById('apiStatus').innerText = "⚠️ Đã xóa khóa API (Sẽ dùng dữ liệu mẫu).";
-            document.getElementById('apiStatus').style.color = "#856404";
-        }
-    }
+    // Constants & Variables
+    let data = {};
 
     setInterval(() => {
         const now = new Date();
@@ -212,219 +230,167 @@
         document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
     }
 
-    function goToStep1() {
+    function goToStep(stepNum) {
         hideAllSteps();
-        document.getElementById('step1').classList.add('active');
-        document.getElementById('cameraInput').value = ''; 
-        renderHistory();
+        document.getElementById('step' + stepNum).classList.add('active');
+    }
+
+    // BƯỚC 1 -> BƯỚC 2
+    function goToStep1() {
+        goToStep(1);
+        document.getElementById('cameraInput').value = '';
     }
 
     document.getElementById('cameraInput').addEventListener('change', function(e) {
         if(e.target.files && e.target.files[0]) {
-            hideAllSteps();
-            document.getElementById('step2').classList.add('active');
-            
             const reader = new FileReader();
             reader.onload = function(event) {
-                const base64String = event.target.result;
-                document.getElementById('imgPreview').src = base64String;
+                document.getElementById('imgPreview').src = event.target.result;
                 document.getElementById('imgPreview').style.display = 'block';
-                phanTichPhieuBangAI(base64String);
+                goToStep(2);
             }
             reader.readAsDataURL(e.target.files[0]);
         }
     });
 
-    async function phanTichPhieuBangAI(base64Image) {
-        document.getElementById('aiLoading').style.display = 'block';
-        document.getElementById('aiData').style.display = 'none';
-
-        const apiKey = localStorage.getItem('gemini_api_key');
-
-        try {
-            let extractedData;
-            
-            if (!apiKey) {
-                // Nếu chưa nhập API Key, chạy dữ liệu mẫu thông minh để test giao diện
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                extractedData = {
-                    "So_Phieu": "0169557",
-                    "San_Pham": "Xăng E10 RON 95",
-                    "So_Luong": "6000",
-                    "Ngay_Lay_Hang": "12/08/2026",
-                    "Gio_Lay_Hang": "09:28",
-                    "Nhiet_Do": "31.31",
-                    "Ham_Chua_So": "H034",
-                    "Tam_Muc": "5"
-                };
-            } else {
-                // Gọi thật Gemini AI API bằng khóa người dùng đã nhập
-                const base64Data = base64Image.split(',')[1];
-                const prompt = "Hãy đọc phiếu xuất kho xăng dầu trong ảnh và trả về JSON chuẩn (không markdown) gồm các trường: So_Phieu, San_Pham, So_Luong (dạng số nguyên), Ngay_Lay_Hang, Gio_Lay_Hang, Nhiet_Do (tìm giá trị to), Ham_Chua_So (ví dụ H034), Tam_Muc (số đằng sau dấu hai chấm).";
-                
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Data } }] }] })
-                });
-                
-                const data = await response.json();
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-                let jsonText = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-                extractedData = JSON.parse(jsonText);
-            }
-
-            document.getElementById('val-soPhieu').innerText = extractedData.So_Phieu;
-            document.getElementById('val-sanPham').innerText = extractedData.San_Pham;
-            document.getElementById('val-soLuong').innerText = extractedData.So_Luong;
-            document.getElementById('val-ngayLay').innerText = extractedData.Ngay_Lay_Hang;
-            document.getElementById('val-gioLay').innerText = extractedData.Gio_Lay_Hang;
-            document.getElementById('val-nhietDo').innerText = extractedData.Nhiet_Do;
-            document.getElementById('val-hamChua').innerText = extractedData.Ham_Chua_So;
-            document.getElementById('val-tamMuc').innerText = extractedData.Tam_Muc;
-
-            globalKhoTemp = parseFloat(extractedData.Nhiet_Do.replace(',', '.'));
-            globalChungTuVol = parseFloat(extractedData.So_Luong.replace(/\./g, '').replace(',', '.'));
-            
-            document.getElementById('inputVol').value = globalChungTuVol;
-            document.getElementById('step3-nhietDo').innerText = extractedData.Nhiet_Do;
-            document.getElementById('step3-ham').innerText = extractedData.Ham_Chua_So;
-            document.getElementById('step3-tamMuc').innerText = extractedData.Tam_Muc;
-
-            document.getElementById('aiLoading').style.display = 'none';
-            document.getElementById('aiData').style.display = 'block';
-        } catch (error) {
-            alert("Lỗi đọc ảnh từ AI: " + error.message + "\n(Vui lòng kiểm tra lại API Key hoặc chụp ảnh rõ nét hơn!)");
-            goToStep1();
-        }
+    // Lấy giá trị số từ input, rỗng = 0
+    function getNum(id) {
+        const val = parseFloat(document.getElementById(id).value);
+        return isNaN(val) ? 0 : val;
     }
 
+    // BƯỚC 2 -> BƯỚC 3
     function goToStep3() {
-        hideAllSteps();
-        document.getElementById('step3').classList.add('active');
-        document.getElementById('arrivalTime').innerText = new Date().toLocaleTimeString('vi-VN');
-        document.getElementById('inputTemp').value = '';
-        document.getElementById('inputLevel').value = '';
-        document.getElementById('tempAlert').style.display = 'none';
-        document.getElementById('logicResultCard').style.display = 'none';
-    }
+        const soLuong = document.getElementById('s2_soLuong').value;
+        const nhietDo = document.getElementById('s2_nhietDo').value;
 
-    function evaluateLogics() {
-        const tempInput = parseFloat(document.getElementById('inputTemp').value);
-        const levelInput = document.getElementById('inputLevel').value;
-        const volInput = parseFloat(document.getElementById('inputVol').value);
-        
-        const alertBox = document.getElementById('tempAlert');
-        const logicCard = document.getElementById('logicResultCard');
-        const logicText = document.getElementById('logicStatusText');
-
-        if (isNaN(tempInput) || !levelInput || isNaN(volInput)) {
-            alertBox.style.display = 'none';
-            logicCard.style.display = 'none';
+        if(!soLuong || !nhietDo) {
+            alert("Vui lòng nhập Số lượng và Nhiệt độ kho!");
             return;
         }
 
+        document.getElementById('lbl_khoTemp').innerText = nhietDo + ' °C';
+        goToStep(3);
+    }
+
+    // BƯỚC 3 -> BƯỚC 4
+    function goToStep4() {
+        const nhietDoNhap = document.getElementById('s3_nhietDo').value;
+        if(!nhietDoNhap) {
+            alert("Vui lòng nhập Nhiệt độ thực tế tại trạm!");
+            return;
+        }
+        goToStep(4);
+    }
+
+    // BƯỚC 4 -> BƯỚC 5
+    function goToStep5() {
+        goToStep(5);
+        calculateFinalResult();
+    }
+
+    // TÍNH TOÁN LOGIC TẠI BƯỚC 5
+    function calculateFinalResult() {
+        const resultCard = document.getElementById('finalResultCard');
+        const alertBox = document.getElementById('logicAlert');
+        resultCard.style.display = 'block';
+
+        // Lấy số lượng chứng từ
+        const soLuongCT = getNum('s2_soLuong');
+        const tempKho = getNum('s2_nhietDo');
+        const tempNhap = getNum('s3_nhietDo');
+
+        // Lấy tầm mức H1-H5 (Kho)
+        const khoH = [getNum('s2_h1'), getNum('s2_h2'), getNum('s2_h3'), getNum('s2_h4'), getNum('s2_h5')];
+        // Lấy tầm mức H1-H5 (Nhập)
+        const nhapH = [getNum('s3_h1'), getNum('s3_h2'), getNum('s3_h3'), getNum('s3_h4'), getNum('s3_h5')];
+
+        // Tính tổng thực nhập từ Bồn (Sau - Trước)
+        const truocB1 = getNum('s4_bon1'), sauB1 = getNum('s5_bon1');
+        const truocB2 = getNum('s4_bon2'), sauB2 = getNum('s5_bon2');
+        const truocB3 = getNum('s4_bon3'), sauB3 = getNum('s5_bon3');
+        const truocBD = getNum('s4_bonDau'), sauBD = getNum('s5_bonDau');
+
+        const thucNhap = (sauB1 - truocB1) + (sauB2 - truocB2) + (sauB3 - truocB3) + (sauBD - truocBD);
+        const chenhLech = thucNhap - soLuongCT;
+
+        document.getElementById('res_chungTu').innerText = soLuongCT.toLocaleString('vi-VN');
+        document.getElementById('res_thucNhap').innerText = thucNhap.toLocaleString('vi-VN');
+        
+        const clText = document.getElementById('res_chenhLech');
+        clText.innerText = (chenhLech > 0 ? '+' : '') + chenhLech.toLocaleString('vi-VN');
+        clText.style.color = chenhLech < 0 ? 'red' : 'green';
+
+        // --- BẮT ĐẦU PHÂN TÍCH LOGIC ĐỦ / THIẾU / NGHI NGỜ ---
+        let status = "ĐỦ";
+        let msg = "";
+
+        // 1. Phân tích Tầm mức
+        let checkH = 0; // 0: Bằng, -1: Hụt, 1: Dâng
+        for(let i=0; i<5; i++) {
+            if(nhapH[i] < khoH[i]) checkH = -1; // Chỉ cần 1 hầm hụt là báo hụt
+            else if(nhapH[i] > khoH[i] && checkH !== -1) checkH = 1;
+        }
+
+        // 2. Xét theo Nhiệt độ & Tầm mức hầm
+        if (tempNhap > tempKho) {
+            // Nhiệt tăng -> Đáng lý phải dâng. Nếu bằng hoặc hụt -> Nghi ngờ
+            if (checkH <= 0) {
+                status = "NGHI NGỜ";
+                msg = `🌡️ Nhiệt tăng (${tempNhap}°C > ${tempKho}°C) nhưng tầm mức hầm hụt/bằng. `;
+            }
+        } else if (tempNhap < tempKho) {
+            // Nhiệt giảm -> Hao hụt vật lý (Thiếu)
+            if (checkH < 0) {
+                status = "THIẾU";
+                msg = `🌡️ Co ngót vật lý do nhiệt độ giảm (${tempNhap}°C < ${tempKho}°C). `;
+            }
+        } else {
+            // Nhiệt bằng -> Phải khớp
+            if (checkH < 0) {
+                status = "NGHI NGỜ";
+                msg = `🌡️ Nhiệt độ ổn định nhưng tầm mức hầm bị hụt. `;
+            }
+        }
+
+        // 3. Xét theo Lượng thực nhập bồn
+        if (chenhLech < 0) {
+            if (status !== "NGHI NGỜ") status = "THIẾU";
+            msg += `💧 Hao hụt bồn thực tế: ${Math.abs(chenhLech)} Lít.`;
+        }
+
+        // Hiển thị kết quả
         alertBox.style.display = 'block';
-        logicCard.style.display = 'block';
-
-        let warningMsg = "";
-        let statusType = "ĐỦ"; 
-
-        if (tempInput > globalKhoTemp) {
-            alertBox.style.backgroundColor = '#fff3cd'; alertBox.style.color = '#856404';
-            warningMsg = `🌡️ Nhiệt độ tăng (${tempInput}°C > ${globalKhoTemp}°C): Xăng giãn nở, lý tưởng tầm mức phải <strong>DÂNG CAO HƠN</strong> cữ chuẩn.`;
-            if (levelInput === 'Hụt thấp') statusType = "NGHI NGỜ";
-        } else if (tempInput < globalKhoTemp) {
-            alertBox.style.backgroundColor = '#e2e3e5'; alertBox.style.color = '#383d41';
-            warningMsg = `🌡️ Nhiệt độ giảm (${tempInput}°C < ${globalKhoTemp}°C): Co ngót vật lý, tầm mức thực tế sẽ <strong>HỤT THẤP HƠN</strong> cữ (Hao hụt tự nhiên).`;
-            if (levelInput === 'Hụt thấp') statusType = "THIẾU";
+        if (status === "ĐỦ") {
+            alertBox.style.backgroundColor = '#d4edda';
+            alertBox.style.color = '#155724';
+            alertBox.innerHTML = `✅ KẾT QUẢ: NHẬP ĐỦ HOÀN TOÀN<br><span style="font-weight:normal; font-size:0.8rem">Số liệu khớp với chứng từ và điều kiện vật lý.</span>`;
+        } else if (status === "THIẾU") {
+            alertBox.style.backgroundColor = '#d1ecf1';
+            alertBox.style.color = '#0c5460';
+            alertBox.innerHTML = `ℹ️ KẾT QUẢ: THIẾU (HAO HỤT CHO PHÉP)<br><span style="font-weight:normal; font-size:0.8rem">${msg}</span>`;
         } else {
-            alertBox.style.backgroundColor = '#d4edda'; alertBox.style.color = '#155724';
-            warningMsg = `🌡️ Nhiệt độ ổn định. Tấm mức phải <strong>KHỚP</strong> đúng cữ chuẩn.`;
-            if (levelInput !== 'Khớp cữ') statusType = "NGHI NGỜ";
-        }
-
-        const diff = volInput - globalChungTuVol;
-        if (diff < 0) {
-            if (statusType !== "NGHI NGỜ") statusType = "THIẾU";
-            warningMsg += `<br>💧 Lượng nhập hụt ${Math.abs(diff)} Lít so với chứng từ.`;
-        }
-
-        alertBox.innerHTML = warningMsg;
-
-        if (statusType === "ĐỦ") {
-            logicCard.style.backgroundColor = '#d4edda'; logicCard.style.color = '#155724';
-            logicText.innerHTML = "✅ KẾT LUẬN: NHẬP ĐỦ & AN TOÀN";
-        } else if (statusType === "THIẾU") {
-            logicCard.style.backgroundColor = '#d1ecf1'; logicCard.style.color = '#0c5460';
-            logicText.innerHTML = "ℹ️ KẾT LUẬN: NHẬP THIẾU (HAO HỤT NHIỆT ĐỘ CHO PHÉP)";
-        } else {
-            logicCard.style.backgroundColor = '#f8d7da'; logicCard.style.color = '#721c24';
-            logicText.innerHTML = "🚨 KẾT LUẬN: PHÁT HIỆN NGHI NGỜ / BẤT THƯỜNG - CẦN LẬP BIÊN BẢN!";
+            alertBox.style.backgroundColor = '#f8d7da';
+            alertBox.style.color = '#721c24';
+            alertBox.innerHTML = `🚨 KẾT QUẢ: NGHI NGỜ / BẤT THƯỜNG!<br><span style="font-weight:normal; font-size:0.8rem">${msg} Yêu cầu lập biên bản kiểm tra lại xe bồn.</span>`;
         }
     }
 
-    function saveReport() {
-        const temp = document.getElementById('inputTemp').value;
-        const level = document.getElementById('inputLevel').value;
-        const vol = document.getElementById('inputVol').value;
+    function saveAndReset() {
+        alert("Đã lưu báo cáo thành công! Quy trình kết thúc.");
         
-        if(!temp || !level || !vol) {
-            alert("Vui lòng điền đầy đủ thông tin thực tế trước khi lưu!");
-            return;
-        }
-
-        const soPhieu = document.getElementById('val-soPhieu').innerText;
-        const sanPham = document.getElementById('val-sanPham').innerText;
-        const nowStr = new Date().toLocaleTimeString('vi-VN');
-
-        let badgeHTML = '<span class="badge badge-du">ĐỦ</span>';
-        const diff = parseFloat(vol) - globalChungTuVol;
-        if (diff < 0) badgeHTML = '<span class="badge badge-thieu">THIẾU</span>';
+        // Reset toàn bộ form
+        const inputs = document.querySelectorAll('input[type="number"], input[type="text"]');
+        inputs.forEach(input => input.value = '');
         
-        const tempInput = parseFloat(temp);
-        if ((tempInput > globalKhoTemp && level === 'Hụt thấp') || (tempInput === globalKhoTemp && level !== 'Khớp cữ')) {
-            badgeHTML = '<span class="badge badge-nghi-ngo">NGHI NGỜ</span>';
-        }
+        document.getElementById('s4_bon1').value = '0'; document.getElementById('s4_bon2').value = '0';
+        document.getElementById('s4_bon3').value = '0'; document.getElementById('s4_bonDau').value = '0';
+        document.getElementById('s5_bon1').value = '0'; document.getElementById('s5_bon2').value = '0';
+        document.getElementById('s5_bon3').value = '0'; document.getElementById('s5_bonDau').value = '0';
 
-        historyData.unshift({
-            phieu: soPhieu,
-            sp: sanPham,
-            time: nowStr,
-            vol: vol,
-            badge: badgeHTML
-        });
-
-        alert("Đã lưu báo cáo ca trực thành công!");
+        document.getElementById('finalResultCard').style.display = 'none';
+        
         goToStep1();
-    }
-
-    function renderHistory() {
-        const listEl = document.getElementById('historyList');
-        const countEl = document.getElementById('historyCount');
-        
-        countEl.innerText = `(${historyData.length} phiếu)`;
-
-        if (historyData.length === 0) {
-            listEl.innerHTML = `<li style="text-align: center; color: var(--text-muted); padding: 10px; font-size: 0.8rem;">Chưa có phiếu nhập nào trong ca này.</li>`;
-            return;
-        }
-
-        let html = '';
-        historyData.forEach(item => {
-            html += `
-                <li class="history-item">
-                    <div class="history-top">
-                        <span>Phiếu: ${item.phieu} (${item.sp})</span>
-                        ${item.badge}
-                    </div>
-                    <div class="history-sub">Thực nhập: <strong>${item.vol} Lít</strong> | Lúc: ${item.time}</div>
-                </li>
-            `;
-        });
-        listEl.innerHTML = html;
     }
 </script>
 
