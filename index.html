@@ -58,18 +58,31 @@
         .highlight { color: var(--primary); font-weight: bold; }
 
         /* Lịch sử */
-        .history-list { list-style: none; padding: 0; max-height: 220px; overflow-y: auto; margin-top: 10px; }
-        .history-item { background: #f8f9fa; border: 1px solid var(--border); padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 0.85rem; }
-        .history-top { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 4px; }
+        .history-list { list-style: none; padding: 0; max-height: 250px; overflow-y: auto; margin-top: 10px; }
+        .history-item { background: #f8f9fa; border: 1px solid var(--border); padding: 10px; border-radius: 6px; margin-bottom: 8px; display: flex; gap: 12px; align-items: center; }
+        .history-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .history-content { flex: 1; }
+        .history-top { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 4px; font-size: 0.85rem; }
         .history-sub { color: var(--text-muted); font-size: 0.8rem; }
         
         .badge { padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; color: white; font-weight: bold; }
         .badge-du { background: var(--success); }
         .badge-thieu { background: #17a2b8; }
         .badge-nghi-ngo { background: var(--danger); }
+
+        /* Modal phóng to ảnh */
+        #imageModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; padding: 15px; }
+        .modal-close { color: white; font-size: 1.5rem; align-self: flex-end; cursor: pointer; margin-bottom: 15px; font-weight: bold; background: #dc3545; padding: 5px 15px; border-radius: 8px; }
+        #modalImg { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; }
     </style>
 </head>
 <body>
+
+<!-- Trình xem ảnh Full màn hình -->
+<div id="imageModal">
+    <div class="modal-close" onclick="closeModal()">ĐÓNG X</div>
+    <img id="modalImg" src="">
+</div>
 
 <div id="app">
     <header>
@@ -235,20 +248,29 @@
 
         <button class="btn btn-outline" style="margin-top: 15px;" onclick="goToStep(4)">Quay lại</button>
     </div>
-
 </div>
 
 <script>
-    // Variables
     let historyData = [];
-    let currentResult = { thucNhap: 0, status: 'ĐỦ' }; // Biến trung gian lưu kết quả tính toán
+    let currentResult = { thucNhap: 0, status: 'ĐỦ' }; 
+    let currentImageBase64 = ""; // Biến lưu trữ ảnh tạm thời trong phiên nhập
 
     setInterval(() => {
         const now = new Date();
         document.getElementById('currentTime').innerText = now.toLocaleTimeString('vi-VN') + ' - ' + now.toLocaleDateString('vi-VN');
     }, 1000);
 
-    // RENDER LỊCH SỬ TRÊN BƯỚC 1
+    // Mở và đóng ảnh Full màn hình
+    function viewImage(src) {
+        document.getElementById('modalImg').src = src;
+        document.getElementById('imageModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('imageModal').style.display = 'none';
+    }
+
+    // RENDER LỊCH SỬ TRÊN BƯỚC 1 (Cập nhật hiển thị Thumbnail)
     function renderHistory() {
         const listEl = document.getElementById('historyList');
         const countEl = document.getElementById('historyCount');
@@ -262,20 +284,23 @@
 
         let html = '';
         historyData.forEach(item => {
+            // Cấu trúc HTML mới có chứa Thumbnail
             html += `
                 <li class="history-item">
-                    <div class="history-top">
-                        <span>Phiếu: ${item.phieu}</span>
-                        ${item.badge}
+                    ${item.image ? `<img src="${item.image}" class="history-thumb" onclick="viewImage('${item.image}')">` : ''}
+                    <div class="history-content">
+                        <div class="history-top">
+                            <span>Phiếu: ${item.phieu}</span>
+                            ${item.badge}
+                        </div>
+                        <div class="history-sub">Thực nhập: <strong>${item.vol.toLocaleString('vi-VN')} Lít</strong> | Lúc: ${item.time}</div>
                     </div>
-                    <div class="history-sub">Thực nhập: <strong>${item.vol.toLocaleString('vi-VN')} Lít</strong> | Lúc: ${item.time}</div>
                 </li>
             `;
         });
         listEl.innerHTML = html;
     }
 
-    // Khởi chạy render ngay khi mở app
     window.onload = renderHistory;
 
     function hideAllSteps() {
@@ -298,7 +323,8 @@
         if(e.target.files && e.target.files[0]) {
             const reader = new FileReader();
             reader.onload = function(event) {
-                document.getElementById('imgPreview').src = event.target.result;
+                currentImageBase64 = event.target.result; // Lưu dữ liệu ảnh vào biến cục bộ
+                document.getElementById('imgPreview').src = currentImageBase64;
                 document.getElementById('imgPreview').style.display = 'block';
                 goToStep(2);
             }
@@ -306,7 +332,6 @@
         }
     });
 
-    // Lấy giá trị số từ input, rỗng = 0
     function getNum(id) {
         const val = parseFloat(document.getElementById(id).value);
         return isNaN(val) ? 0 : val;
@@ -401,7 +426,6 @@
             msg += `💧 Hao hụt bồn thực tế: ${Math.abs(chenhLech)} Lít.`;
         }
 
-        // Lưu tạm kết quả để dùng khi bấm nút "Lưu báo cáo"
         currentResult.thucNhap = thucNhap;
         currentResult.status = status;
 
@@ -426,22 +450,24 @@
         const soPhieu = document.getElementById('s2_soPhieu').value || 'Không rõ';
         const nowStr = new Date().toLocaleTimeString('vi-VN');
 
-        // Tạo giao diện nhãn dựa trên kết quả tính toán
         let badgeHTML = '<span class="badge badge-du">ĐỦ</span>';
         if (currentResult.status === "THIẾU") badgeHTML = '<span class="badge badge-thieu">THIẾU</span>';
         if (currentResult.status === "NGHI NGỜ") badgeHTML = '<span class="badge badge-nghi-ngo">NGHI NGỜ</span>';
 
-        // Đẩy vào mảng lịch sử
+        // Đẩy vào mảng lịch sử (Gắn kèm ảnh chụp)
         historyData.unshift({
             phieu: soPhieu,
             time: nowStr,
             vol: currentResult.thucNhap,
-            badge: badgeHTML
+            badge: badgeHTML,
+            image: currentImageBase64 // Lưu biến ảnh đã chụp ở Bước 1
         });
 
         alert("Đã lưu báo cáo thành công! Quy trình kết thúc.");
         
-        // Reset toàn bộ form
+        // Reset toàn bộ biến và form
+        currentImageBase64 = ""; // Reset ảnh để tránh lưu nhầm vào ca sau nếu không chụp
+        
         const inputs = document.querySelectorAll('input[type="number"], input[type="text"]');
         inputs.forEach(input => input.value = '');
         
@@ -453,7 +479,6 @@
         document.getElementById('finalResultCard').style.display = 'none';
         document.getElementById('imgPreview').src = "";
         
-        // Quay về Bước 1, hàm goToStep1() sẽ gọi renderHistory()
         goToStep1();
     }
 </script>
